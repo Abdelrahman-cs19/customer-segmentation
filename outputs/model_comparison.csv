@@ -1,0 +1,15 @@
+model_id,algorithm,n_clusters,noise_pct,min_cluster_pct,max_cluster_pct,silhouette,davies_bouldin,calinski_harabasz,inertia,bic,aic,stability_ari_mean,stability_ari_std,eligible,stable,in_pool,mean_rank,selection_rank,selected,reject_reason
+"kmeans[n_clusters=3,n_init=10]",kmeans,3,0.0,13.743,71.4078,0.3957,1.0346,3833.0251,82524.3379,,,0.995,0.0025,True,True,True,1.25,1.0,False,
+"minibatch_kmeans[batch_size=1024,n_clusters=3,n_init=10]",minibatch_kmeans,3,0.0,13.8994,71.1061,0.3942,1.0387,3832.2849,82561.5757,,,0.7056,0.3154,True,True,True,4.0,2.0,False,
+"gmm[covariance_type=spherical,n_clusters=3,n_init=3]",gmm,3,0.0,13.4525,71.0615,0.3881,1.059,3764.6477,,371508.4652,371068.3018,0.7675,0.281,True,True,True,4.25,3.0,False,
+"kmeans[n_clusters=4,n_init=10]",kmeans,4,0.0,13.3296,50.3911,0.2772,1.1835,3694.6668,68438.7422,,,0.993,0.0031,True,True,True,4.5,4.0,True,
+"gmm[covariance_type=spherical,n_clusters=4,n_init=3]",gmm,4,0.0,13.1508,51.6872,0.2626,1.1567,3467.7484,,336515.9665,335926.7156,0.9951,0.0027,True,True,True,4.75,5.0,False,
+"minibatch_kmeans[batch_size=1024,n_clusters=4,n_init=10]",minibatch_kmeans,4,0.0,13.1955,48.838,0.2726,1.2188,3683.6108,68626.0674,,,0.9097,0.0796,True,True,True,5.75,6.0,False,
+"agglomerative[linkage=ward,n_clusters=3]",agglomerative,3,0.0,13.7765,68.9385,0.3614,1.159,3531.7701,,,,0.7615,0.0846,True,True,True,6.0,7.0,False,
+"agglomerative[linkage=ward,n_clusters=4]",agglomerative,4,0.0,13.7765,49.8212,0.2586,1.1978,3338.853,,,,0.8007,0.0698,True,True,True,7.5,8.0,False,
+"kmeans[n_clusters=5,n_init=10]",kmeans,5,0.0,12.8492,36.4134,0.253,1.4026,3237.3436,62604.0417,,,0.8766,0.1319,True,True,True,8.25,9.0,False,
+"agglomerative[linkage=ward,n_clusters=5]",agglomerative,5,0.0,5.0168,49.8212,0.2483,1.3435,2876.1707,,,,0.8159,0.046,True,True,True,9.0,10.0,False,
+"minibatch_kmeans[batch_size=1024,n_clusters=6,n_init=10]",minibatch_kmeans,6,0.0,4.257,34.9385,0.2475,1.4695,2950.8994,58083.2669,,,0.6361,0.0929,True,True,True,10.75,11.0,False,
+"gmm[covariance_type=tied,n_clusters=3,n_init=3]",gmm,3,0.0,11.1285,75.1061,0.4051,0.9976,3664.1073,,172105.4151,170337.6623,0.5548,0.2934,True,False,False,,,False,stability ARI 0.55 < 0.6
+"dbscan[eps=2.09,min_samples=40]",dbscan,2,4.3128,1.5196,94.1676,0.4426,0.6701,647.5747,,,,0.9478,0.0105,False,True,False,,,False,"k=2 outside [3,8]; smallest cluster 1.52% < 2%"
+"hdbscan[min_cluster_size=100,min_samples=30]",hdbscan,2,9.6536,1.1955,89.1508,0.4668,0.6206,568.6778,,,,0.7894,0.2968,False,True,False,,,False,"k=2 outside [3,8]; smallest cluster 1.2% < 2%"

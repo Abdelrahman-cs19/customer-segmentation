@@ -1,0 +1,164 @@
+{
+  "seed": 42,
+  "consistency": {
+    "n_rows": 8950,
+    "n_duplicate_rows": 0,
+    "purchases_equal_components_pct": 99.777,
+    "purchases_component_mismatch_rows": 20,
+    "purchases_component_max_gap": 600.0,
+    "purchases_pos_but_zero_trx": 3,
+    "purchases_zero_but_pos_trx": 3,
+    "cash_adv_inconsistent_trx": 0,
+    "cash_adv_frequency_above_1": 8,
+    "balance_above_credit_limit": 227,
+    "min_payments_missing": 313,
+    "min_payments_missing_with_zero_payments": 240,
+    "min_payments_missing_with_positive_payments": 73,
+    "zero_payments_total": 240,
+    "credit_limit_missing": 1,
+    "fully_inactive_customers": 1
+  },
+  "cleaning_log": {
+    "min_payments_strategy": "median",
+    "rows_before": 8950,
+    "clipped_to_unit_interval": {
+      "CASH_ADVANCE_FREQUENCY": 8
+    },
+    "credit_limit_imputed": {
+      "n": 1,
+      "value": 3000.0
+    },
+    "min_payments_imputed": {
+      "n": 313,
+      "strategy": "median",
+      "fill": 312.343947
+    },
+    "rows_after": 8950
+  },
+  "preprocessing": {
+    "feature_set": "engineered",
+    "log": true,
+    "scaler": "robust",
+    "n_features_in": 19,
+    "n_features_out": 19,
+    "log_columns": [
+      "BALANCE",
+      "ONEOFF_PURCHASES",
+      "INSTALLMENTS_PURCHASES",
+      "CASH_ADVANCE",
+      "CASH_ADVANCE_TRX",
+      "PURCHASES_TRX",
+      "CREDIT_LIMIT",
+      "PAYMENTS",
+      "MINIMUM_PAYMENTS",
+      "BALANCE_TO_LIMIT",
+      "PAYMENT_TO_MINPAY_RATIO",
+      "AVG_PURCHASE_TICKET"
+    ],
+    "dropped_by_variance": []
+  },
+  "selection": {
+    "chosen_model_id": "kmeans[n_clusters=4,n_init=10]",
+    "composite_rank_winner": "kmeans[n_clusters=3,n_init=10]",
+    "manual_override": true,
+    "override_reason": "Composite rank preferred K-Means k=3, but its largest segment (71% of customers) merges cash-advance-only borrowers with active purchasers. k=4 splits exactly that segment, keeps the other two segments almost unchanged, sits at the inertia elbow, and is just as stable (ARI 0.99).",
+    "n_candidates": 93,
+    "n_eligible": 42,
+    "n_finalists": 14
+  },
+  "repredict_matches_labels": true,
+  "pca_cumulative_variance": [
+    0.3405,
+    0.6093,
+    0.7311,
+    0.8151,
+    0.8593,
+    0.8988,
+    0.9286,
+    0.9582,
+    0.9749,
+    0.9813,
+    0.9856,
+    0.9895,
+    0.9923,
+    0.9945,
+    0.9964,
+    0.9978,
+    0.9988,
+    0.9995,
+    1.0
+  ],
+  "pca_explained_variance": [
+    0.34050359844110906,
+    0.26884454420206405
+  ],
+  "alignment": {
+    "same_id_set": true,
+    "n_customers": 8950,
+    "n_unassigned": 0,
+    "n_label_mismatches": 0,
+    "row_order_preserved": true
+  },
+  "segments": {
+    "Cash-Advance Borrowers": {
+      "cluster": 0,
+      "n": 1958,
+      "pct": 21.88,
+      "description": "Cash-Advance Borrowers (21.9% of customers): median balance 1,754, median purchases 0 (purchase frequency 0.00), median cash advance 1,366, median credit limit 3,000, median payments 820, 0% pay >=50% of the time in full.",
+      "assumption": "Likely a higher-risk and higher-fee-income group, since cash advances usually carry fees and higher rates. This dataset has no fee, interest or delinquency fields, so this is NOT verified.",
+      "action": "Offer a lower-rate balance-transfer or personal-loan product; nudge toward everyday purchases with card rewards; monitor utilisation for early-warning review (do not auto-restrict on this label alone)."
+    },
+    "Low-Activity Light Users": {
+      "cluster": 1,
+      "n": 1193,
+      "pct": 13.33,
+      "description": "Low-Activity Light Users (13.3% of customers): median balance 23, median purchases 143 (purchase frequency 0.17), median cash advance 0, median credit limit 2,700, median payments 326, 8% pay >=50% of the time in full.",
+      "assumption": "Probably low revenue today and a possible attrition risk, but also the largest headroom for activation. Unverified.",
+      "action": "Activation campaign: first-purchase bonuses, spend-threshold rewards, merchant partnerships; review whether the card is still the right product (annual-fee-free tier) before spending on acquisition-style offers."
+    },
+    "Frequent Full-Payers": {
+      "cluster": 2,
+      "n": 1289,
+      "pct": 14.4,
+      "description": "Frequent Full-Payers (14.4% of customers): median balance 90, median purchases 916 (purchase frequency 0.92), median cash advance 0, median credit limit 4,000, median payments 1,100, 91% pay >=50% of the time in full.",
+      "assumption": "Likely low interest income but high interchange (swipe-fee) value and low credit risk. Unverified - no revenue data.",
+      "action": "Retention and loyalty: premium rewards tier, limit increases, installment-plan promotions for big-ticket items; avoid interest-based offers that do not match their behaviour."
+    },
+    "Active Balance-Carriers": {
+      "cluster": 3,
+      "n": 4510,
+      "pct": 50.39,
+      "description": "Active Balance-Carriers (50.4% of customers): median balance 1,180, median purchases 677 (purchase frequency 0.75), median cash advance 0, median credit limit 3,500, median payments 969, 0% pay >=50% of the time in full.",
+      "assumption": "Likely the main interest-income group, with moderate risk that depends on utilisation and repayment trends. Unverified.",
+      "action": "Cross-sell installment plans and balance-management tools; reward on-time payments; watch the sub-group with payments below the minimum due for hardship outreach."
+    }
+  },
+  "robustness": {
+    "imputation_sensitivity": [
+      {
+        "strategy": "median",
+        "ari_vs_median": 1.0,
+        "n_clusters": 4
+      },
+      {
+        "strategy": "zero",
+        "ari_vs_median": 0.9901,
+        "n_clusters": 4
+      },
+      {
+        "strategy": "balance_ratio",
+        "ari_vs_median": 0.9944,
+        "n_clusters": 4
+      }
+    ],
+    "feature_set_agreement_ari": {
+      "base_no_total": 0.638575965126501,
+      "base_with_total": 0.7959377834870364,
+      "engineered_reduced": 0.9599481913838593
+    }
+  },
+  "raw_data_sha256_before": "f3d1e93ca09cea44c5a1e1bda8ff9269de7290614c0ae9a782b56af31227f1cb",
+  "raw_data_sha256_after": "f3d1e93ca09cea44c5a1e1bda8ff9269de7290614c0ae9a782b56af31227f1cb",
+  "raw_data_unchanged": true,
+  "runtime_seconds": 451.9
+}

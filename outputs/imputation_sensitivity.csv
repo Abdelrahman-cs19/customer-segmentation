@@ -1,0 +1,4 @@
+strategy,ari_vs_median,n_clusters
+median,1.0,4
+zero,0.9900770760819254,4
+balance_ratio,0.9944122017034164,4

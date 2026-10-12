@@ -1,0 +1,179 @@
+# Central configuration for the customer segmentation pipeline.
+project:
+  seed: 42
+
+paths:
+  raw_data: data/raw/Customer-Data - 2.csv
+  processed_dir: data/processed
+  outputs_dir: outputs
+  figures_dir: figures
+  models_dir: models
+  reports_dir: reports
+  log_file: outputs/pipeline.log
+
+data:
+  id_column: CUST_ID
+  numeric_columns:
+    - BALANCE
+    - BALANCE_FREQUENCY
+    - PURCHASES
+    - ONEOFF_PURCHASES
+    - INSTALLMENTS_PURCHASES
+    - CASH_ADVANCE
+    - PURCHASES_FREQUENCY
+    - ONEOFF_PURCHASES_FREQUENCY
+    - PURCHASES_INSTALLMENTS_FREQUENCY
+    - CASH_ADVANCE_FREQUENCY
+    - CASH_ADVANCE_TRX
+    - PURCHASES_TRX
+    - CREDIT_LIMIT
+    - PAYMENTS
+    - MINIMUM_PAYMENTS
+    - PRC_FULL_PAYMENT
+    - TENURE
+
+cleaning:
+  # Columns that are shares/fractions of the observation window and must lie in [0, 1].
+  proportion_columns:
+    - BALANCE_FREQUENCY
+    - PURCHASES_FREQUENCY
+    - ONEOFF_PURCHASES_FREQUENCY
+    - PURCHASES_INSTALLMENTS_FREQUENCY
+    - CASH_ADVANCE_FREQUENCY
+    - PRC_FULL_PAYMENT
+  credit_limit_strategy: median          # median
+  min_payments_strategy: median          # median | zero | balance_ratio
+  purchase_sum_tolerance: 0.01           # |PURCHASES - (ONEOFF + INSTALLMENTS)| tolerated as equal
+
+features:
+  # TENURE is an account/observation attribute, not spending behaviour; it is profiled but not clustered.
+  profile_only: [TENURE]
+  sets:
+    base_with_total:      # ablation only: double-counts purchases
+      - BALANCE
+      - BALANCE_FREQUENCY
+      - PURCHASES
+      - ONEOFF_PURCHASES
+      - INSTALLMENTS_PURCHASES
+      - CASH_ADVANCE
+      - PURCHASES_FREQUENCY
+      - ONEOFF_PURCHASES_FREQUENCY
+      - PURCHASES_INSTALLMENTS_FREQUENCY
+      - CASH_ADVANCE_FREQUENCY
+      - CASH_ADVANCE_TRX
+      - PURCHASES_TRX
+      - CREDIT_LIMIT
+      - PAYMENTS
+      - MINIMUM_PAYMENTS
+      - PRC_FULL_PAYMENT
+    base_no_total:
+      - BALANCE
+      - BALANCE_FREQUENCY
+      - ONEOFF_PURCHASES
+      - INSTALLMENTS_PURCHASES
+      - CASH_ADVANCE
+      - PURCHASES_FREQUENCY
+      - ONEOFF_PURCHASES_FREQUENCY
+      - PURCHASES_INSTALLMENTS_FREQUENCY
+      - CASH_ADVANCE_FREQUENCY
+      - CASH_ADVANCE_TRX
+      - PURCHASES_TRX
+      - CREDIT_LIMIT
+      - PAYMENTS
+      - MINIMUM_PAYMENTS
+      - PRC_FULL_PAYMENT
+    engineered:
+      - BALANCE
+      - BALANCE_FREQUENCY
+      - ONEOFF_PURCHASES
+      - INSTALLMENTS_PURCHASES
+      - CASH_ADVANCE
+      - PURCHASES_FREQUENCY
+      - ONEOFF_PURCHASES_FREQUENCY
+      - PURCHASES_INSTALLMENTS_FREQUENCY
+      - CASH_ADVANCE_FREQUENCY
+      - CASH_ADVANCE_TRX
+      - PURCHASES_TRX
+      - CREDIT_LIMIT
+      - PAYMENTS
+      - MINIMUM_PAYMENTS
+      - PRC_FULL_PAYMENT
+      - BALANCE_TO_LIMIT
+      - PAYMENT_TO_MINPAY_RATIO
+      - ONEOFF_SHARE
+      - AVG_PURCHASE_TICKET
+
+    engineered_reduced:    # engineered minus the two *_TRX counts (corr >= 0.9 with their frequency twins)
+      - BALANCE
+      - BALANCE_FREQUENCY
+      - ONEOFF_PURCHASES
+      - INSTALLMENTS_PURCHASES
+      - CASH_ADVANCE
+      - PURCHASES_FREQUENCY
+      - ONEOFF_PURCHASES_FREQUENCY
+      - PURCHASES_INSTALLMENTS_FREQUENCY
+      - CASH_ADVANCE_FREQUENCY
+      - CREDIT_LIMIT
+      - PAYMENTS
+      - MINIMUM_PAYMENTS
+      - PRC_FULL_PAYMENT
+      - BALANCE_TO_LIMIT
+      - PAYMENT_TO_MINPAY_RATIO
+      - ONEOFF_SHARE
+      - AVG_PURCHASE_TICKET
+
+preprocessing:
+  log_skew_threshold: 1.0        # log1p only for non-negative, unbounded features with skew above this
+  variance_threshold: 1.0e-8
+  high_corr_threshold: 0.90      # report (not auto-drop) pairs above this in transformed space
+  # Locked after the preprocessing comparison (outputs/preprocessing_comparison.csv).
+  # log1p + RobustScaler had better silhouette/Davies-Bouldin than StandardScaler at every k and the
+  # highest stability; non-log variants isolated 2-person outlier clusters. The feature-set choice
+  # (engineered vs base_no_total) was a statistical tie and is a judgement call.
+  selected: {feature_set: engineered, log: true, scaler: robust}
+  variants:                      # compared on K-Means before locking the pipeline
+    - {log: false, scaler: standard}
+    - {log: false, scaler: robust}
+    - {log: true,  scaler: standard}
+    - {log: true,  scaler: robust}
+
+clustering:
+  k_range: [2, 10]
+  kmeans: {n_init: 10}
+  minibatch_kmeans: {n_init: 10, batch_size: 1024}
+  agglomerative: {linkages: [ward, average]}
+  gmm: {covariance_types: [full, tied, diag, spherical], n_init: 3}
+  dbscan:
+    min_samples: [10, 20, 40]
+    eps_quantiles: [0.80, 0.85, 0.90, 0.95, 0.98]   # quantiles of the k-distance curve
+  hdbscan:
+    min_cluster_size: [50, 100, 200]
+    min_samples: [10, 30]
+
+stability:
+  n_rounds: 10
+  subsample_fraction: 0.8
+  finalists_per_algorithm: 3
+
+selection:
+  k_min: 3                 # k=2 is rarely actionable for marketing
+  k_max: 8
+  min_cluster_fraction: 0.02
+  max_noise_fraction: 0.20
+  min_stability_ari: 0.60
+  # Optional manual override of the composite-rank winner. The override must still be eligible and
+  # stable, and the reason is written to the report. (Composite rank favours small k because
+  # silhouette and Calinski-Harabasz fall as k grows.)
+  final_model_id: "kmeans[n_clusters=4,n_init=10]"
+  override_reason: >-
+    Composite rank preferred K-Means k=3, but its largest segment (71% of customers) merges
+    cash-advance-only borrowers with active purchasers. k=4 splits exactly that segment, keeps the other
+    two segments almost unchanged, sits at the inertia elbow, and is just as stable (ARI 0.99).
+
+profiling:
+  # Thresholds used by the rule-based segment namer (applied to segment *medians* of observed behaviour).
+  naming:
+    cash_borrower: {cash_advance_frequency_min: 0.10, purchases_frequency_max: 0.20}
+    full_payer: {prc_full_payment_min: 0.50, purchases_frequency_min: 0.50}
+    low_activity: {purchases_frequency_max: 0.30, balance_to_limit_max: 0.10, cash_advance_frequency_max: 0.10}
+    active: {purchases_frequency_min: 0.50, prc_full_payment_max: 0.50}

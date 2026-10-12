@@ -1,0 +1,17 @@
+{
+  "min_payments_strategy": "median",
+  "rows_before": 8950,
+  "clipped_to_unit_interval": {
+    "CASH_ADVANCE_FREQUENCY": 8
+  },
+  "credit_limit_imputed": {
+    "n": 1,
+    "value": 3000.0
+  },
+  "min_payments_imputed": {
+    "n": 313,
+    "strategy": "median",
+    "fill": 312.343947
+  },
+  "rows_after": 8950
+}

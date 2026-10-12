@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+.ipynb_checkpoints/
+
+# Regenerable intermediates (re-create with `python run_pipeline.py`)
+data/processed/
+outputs/pipeline.log
+
+# NOTE: models/final_model.joblib, outputs/ and figures/ ARE tracked on purpose:
+# the deployed dashboard reads them and does not re-run the pipeline.
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Streamlit
+.streamlit/secrets.toml
