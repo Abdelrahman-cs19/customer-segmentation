@@ -2,9 +2,13 @@
 
 # 💳 Credit-Card Customer Segmentation
 
-**An end-to-end, reproducible machine-learning project: from a raw CSV to four evidence-based customer segments, a full report, and a live-ready Streamlit dashboard.**
+**An end-to-end, reproducible machine-learning project: from a raw CSV to four evidence-based customer segments, a full report, and a deployed Streamlit dashboard.**
 
 `Python 3.12` · `scikit-learn 1.8` · `pandas 3` · `Streamlit 1.65` · `78 tests passing`
+
+### 🚀 [**Try the live app →**](https://customer-segmentation-mxv9ppwxfevahrpmyvnesu.streamlit.app/)
+
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://customer-segmentation-mxv9ppwxfevahrpmyvnesu.streamlit.app/)
 
 </div>
 
@@ -13,22 +17,24 @@
 ## 🧭 Table of contents
 
 1. [TL;DR - the results at a glance](#-tldr---the-results-at-a-glance)
-2. [Objective and dataset](#-objective-and-dataset)
-3. [How the project works](#-how-the-project-works)
-4. [What was done, phase by phase](#-what-was-done-phase-by-phase)
-5. [Key decisions and the evidence behind them](#-key-decisions-and-the-evidence-behind-them)
-6. [What happened to the outliers?](#-what-happened-to-the-outliers)
-7. [Algorithms compared](#-algorithms-compared)
-8. [The final model and why](#-the-final-model-and-why)
-9. [The four customer segments](#-the-four-customer-segments)
-10. [Visual gallery](#-visual-gallery)
-11. [The dashboard](#-the-dashboard)
-12. [Quick start](#-quick-start)
-13. [Deploy to the web](#-deploy-to-the-web-streamlit-community-cloud)
-14. [Project structure and outputs](#-project-structure-and-outputs)
-15. [Verification: what was actually executed](#-verification-what-was-actually-executed)
-16. [Limitations and honest caveats](#-limitations-and-honest-caveats)
-17. [Ideas for next steps](#-ideas-for-next-steps)
+2. [🌐 Try it live](#-try-it-live)
+3. [Objective and dataset](#-objective-and-dataset)
+4. [How the project works](#-how-the-project-works)
+5. [What was done, phase by phase](#-what-was-done-phase-by-phase)
+6. [Key decisions and the evidence behind them](#-key-decisions-and-the-evidence-behind-them)
+7. [What happened to the outliers?](#-what-happened-to-the-outliers)
+8. [Algorithms compared](#-algorithms-compared)
+9. [The final model and why](#-the-final-model-and-why)
+10. [The four customer segments](#-the-four-customer-segments)
+11. [Visual gallery](#-visual-gallery)
+12. [The dashboard](#-the-dashboard)
+13. [Quick start (run locally)](#-quick-start)
+14. [Deployment](#-deployment)
+15. [Project structure and outputs](#-project-structure-and-outputs)
+16. [Verification: what was actually executed](#-verification-what-was-actually-executed)
+17. [Limitations and honest caveats](#-limitations-and-honest-caveats)
+18. [Ideas for next steps](#-ideas-for-next-steps)
+
 
 ---
 
@@ -42,6 +48,7 @@
 | 🔁 **Stability** | **ARI 0.993 ± 0.003** over 10 pairs of independent 80% subsamples |
 | 📏 **Smallest segment** | **13.3%** of customers (no tiny or outlier-only segments) |
 | 🧪 **Models tried** | **93 configurations** across 6 algorithms; 42 passed the hard business constraints |
+| 🌐 **Live app** | **[customer-segmentation …streamlit.app](https://customer-segmentation-mxv9ppwxfevahrpmyvnesu.streamlit.app/)** |
 | ✅ **Tests** | **78 passed**, including "scoring all 8,950 raw customers reproduces the saved assignments exactly" |
 
 **The four segments** (observed behaviour, medians):
@@ -54,6 +61,31 @@
 | 💤 **Low-Activity Light Users** | 13.3% | Median balance just 23, purchase freq. 0.17, utilisation 0.01 |
 
 > ⚠️ **Honesty box.** The dataset has **no revenue, interest, fee or default data**. Anything said about *profitability* or *risk* below is an **assumption to test**, never a finding. Also, k = 4 was a **documented judgement call** that overrode the top-ranked k = 3 (see [why](#-the-final-model-and-why)).
+
+---
+
+## 🌐 Try it live
+
+**👉 [https://customer-segmentation-mxv9ppwxfevahrpmyvnesu.streamlit.app/](https://customer-segmentation-mxv9ppwxfevahrpmyvnesu.streamlit.app/)**
+
+> 💤 Free Streamlit apps go to sleep when idle. If you see a "this app has gone to sleep" page, click the button to wake it and wait a minute.
+
+### ⏱️ A 2-minute test tour
+
+| Step | Where | What to do | What you should see |
+|---|---|---|---|
+| 1 | 🏠 **Overview** | Look at the segment sizes and the PCA plot | Four segments: 4,510 / 1,958 / 1,289 / 1,193 customers |
+| 2 | 🧪 **Test the model** | Pick the preset **Cash-Advance Borrowers**, press **Assign segment** | *Cash-Advance Borrowers* (margin ≈ 0.85) |
+| 3 | 🧪 **Test the model** | Repeat with **Frequent Full-Payers**, **Low-Activity Light Users**, **Active Balance-Carriers** | Each lands in its own segment (margins ≈ 0.75 / 0.65 / 0.71) |
+| 4 | 🧪 **Test the model** | Start from the *Cash-Advance* preset, then set `PURCHASES_TRX` = 40 and `PRC_FULL_PAYMENT` = 1 | The assignment should move toward a purchasing segment |
+| 5 | 🧪 **Test the model** | Enter a `BALANCE` far above 19,043 (the largest in the data) | A warning that the result is an extrapolation |
+| 6 | 🔎 **Customer lookup** | Enter `C10001` | Its segment, compared with the segment median |
+| 7 | 🔍 **EDA** / ⚙️ **Preprocessing** | Scroll through the figures | 9 EDA figures; the transform steps and 16-variant comparison |
+| 8 | 🧪 **Test the model → Batch** | Download the CSV template, edit it, upload it, download the scored file | A scored CSV with segment, distances and margin |
+
+The margins above come from running the same saved model locally; the live app should match them.
+
+> 🔐 **Please don't upload real customer data** to the public app: the batch upload sends your file to the hosting server. Use the template with made-up values.
 
 ---
 
@@ -278,9 +310,11 @@ PYTHONPATH=src python -m segmentation.reporting     # regenerate reports/final_r
 
 ---
 
-## ☁️ Deploy to the web (Streamlit Community Cloud)
+## ☁️ Deployment
 
-> I could not deploy this for you (it needs your GitHub and Streamlit accounts), but the project is deployment-ready and was tested in a simulated clean-checkout deployment.
+The app is deployed on **Streamlit Community Cloud**: **[https://customer-segmentation-mxv9ppwxfevahrpmyvnesu.streamlit.app/](https://customer-segmentation-mxv9ppwxfevahrpmyvnesu.streamlit.app/)**
+
+**Want your own copy?**
 
 1. 📤 **Push to GitHub**
    ```bash
@@ -292,15 +326,19 @@ PYTHONPATH=src python -m segmentation.reporting     # regenerate reports/final_r
 2. 🌐 Go to **[share.streamlit.io](https://share.streamlit.io)** → **Create app** → pick the repo and branch `main`.
 3. 📄 Set **Main file path** to `app/streamlit_app.py`.
 4. 🐍 In **Advanced settings** choose **Python 3.12** (the saved model is a pickle that must load with the same scikit-learn, 1.8.0).
-5. ▶️ **Deploy** and test the live app with the checklist above.
+5. ▶️ **Deploy**, then run the [test tour](#-try-it-live) on your URL.
+
+**Updating the live app:** commit and push to `main`; Streamlit redeploys automatically. If you re-run the pipeline, commit the refreshed `outputs/`, `figures/` and `models/final_model.joblib` together.
 
 | Symptom | Likely fix |
 |---|---|
 | Model loading / scikit-learn version error | Redeploy with Python 3.12 and the pinned `requirements.txt` |
 | "Pipeline outputs not found" | `outputs/` or `models/` wasn't pushed - check `git ls-files outputs models` |
+| App asleep | Open the link and click the wake-up button |
 | Build fails | Read **Manage app → logs**; don't loosen version pins unless required |
 
-🔐 **Before you go public:** the batch upload sends data to the host, so don't upload real customer data to a public app (use a private app or add authentication). `data/raw/` is tracked for reproducibility; remove it from the repo if you can't redistribute the dataset (the dashboard doesn't read it).
+🔐 **Privacy:** the batch upload sends data to the host, so keep real customer data out of a public app (use a private app or add authentication). `data/raw/` is tracked for reproducibility; remove it from the repo if you can't redistribute the dataset (the dashboard doesn't read it).
+
 
 ---
 
@@ -343,7 +381,8 @@ PYTHONPATH=src python -m segmentation.reporting     # regenerate reports/final_r
   - the raw file's checksum is unchanged
   - a headless run of the dashboard, including the "Test the model" form
 - ✅ **Deployment simulation:** a `git` checkout of only the tracked files + a fresh virtual environment with `requirements.txt` only → the app ran with no exceptions, scoring worked, and the real Streamlit server returned HTTP 200 and a healthy `/_stcore/health`.
-- ❌ **Not done:** deployment to an actual hosting service, and viewing the dashboard in a real browser.
+- 🌐 **Live deployment:** the app was deployed by the project owner at the link above. **I could not open it from my environment** (the site blocks automated access), so I have not checked the live app myself; use the [test tour](#-try-it-live) to confirm it behaves like the local run.
+- ❌ **Not done by me:** viewing the dashboard in a real browser.
 
 ---
 
@@ -373,7 +412,7 @@ PYTHONPATH=src python -m segmentation.reporting     # regenerate reports/final_r
 
 <div align="center">
 
-**📘 Full details:** [`reports/final_report.md`](reports/final_report.md) · **⚙️ Config:** [`configs/config.yaml`](configs/config.yaml)
+**🚀 Live app:** [https://customer-segmentation-mxv9ppwxfevahrpmyvnesu.streamlit.app/](https://customer-segmentation-mxv9ppwxfevahrpmyvnesu.streamlit.app/) · **📘 Full details:** [`reports/final_report.md`](reports/final_report.md) · **⚙️ Config:** [`configs/config.yaml`](configs/config.yaml)
 
 ⚠️ Check the dataset's licence before redistributing `data/raw/`.
 
